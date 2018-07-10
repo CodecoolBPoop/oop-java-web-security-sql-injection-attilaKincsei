@@ -1,4 +1,3 @@
-
 import model.Todo;
 import model.TodoDao;
 import model.TodoDaoImplWithJdbc;
