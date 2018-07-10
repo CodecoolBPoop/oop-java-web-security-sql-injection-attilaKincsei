@@ -15,9 +15,15 @@ public class TodoDaoImplWithJdbc implements TodoDao {
 
     @Override
     public void add(Todo todo) {
-        String query = "INSERT INTO todos (title, id, status) " +
-                "VALUES ('" + todo.title + "', '" + todo.id + "', '" + todo.status + "');";
-        executeQuery(query);
+        boolean validUserInput = SqlSecurity.validateUserInput(todo.title);
+        if (validUserInput) {
+            String query = "INSERT INTO todos (title, id, status) " +
+                    "VALUES ('" + todo.title + "', '" + todo.id + "', '" + todo.status + "');";
+            executeQuery(query);
+            System.out.println("valid user input");
+        } else {
+            System.out.println("Forbidden character sequence in user input: " + todo.title);
+        }
     }
 
     @Override
