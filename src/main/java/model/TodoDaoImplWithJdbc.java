@@ -1,6 +1,7 @@
 package model;
 
 import java.sql.*;
+import org.postgresql.*;
 import java.util.ArrayList;
 import java.util.List;
 
